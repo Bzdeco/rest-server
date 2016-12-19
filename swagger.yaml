@@ -55,6 +55,22 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Client'
+          examples:
+            application/json:
+              - idklienta: KOWALSKI01
+                haslo: ugx89
+                nazwa: kowal
+                miasto: Kraków
+                kod: 30-100
+                adres: Rynek 3/4
+                telefon: 123-456-789
+              - idklienta: NOWAK00001
+                haslo: wrxy100
+                nazwa: kowal
+                miasto: Kraków
+                kod: 30-100
+                adres: Rynek 3/4
+                telefon: 123-456-789
             
     post:
       tags:
@@ -173,14 +189,6 @@ definitions:
       regon:  
         type: string
         description: dokładnie 9 znaków
-    example:
-      idklienta: KOwALSKI01
-      haslo: ugx89
-      nazwa: kowal
-      miasto: Kraków
-      kod: 30-100
-      adres: Rynek 3/4
-      telefon: 123-456-789
 
       
       
