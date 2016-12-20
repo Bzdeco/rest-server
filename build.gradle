@@ -20,6 +20,7 @@ plugins {
 
 apply plugin: 'java'
 apply plugin: 'eclipse'
+apply plugin: 'idea'
 apply plugin: 'application'
 apply plugin: 'distribution'
 apply plugin: 'groovy'
@@ -98,4 +99,24 @@ dependencies {
     testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
     testCompile 'junit:junit:4.12'
 }
+
+tasks.findAll { task -> task.name.startsWith('generate') } 
+		.each { 
+			it.dependsOn flywayMigrate
+			it.inputs.file( "test.db")
+                  }
+
+task generateAllJooqSchemaSource << {}
+
+generateAllJooqSchemaSource.dependsOn {
+    tasks.findAll { task -> task.name.matches('generate\\w+JooqSchemaSource') && task.name != 'generateAllJooqSchemaSource' }
+}
+
+
+eclipseClasspath.dependsOn generateAllJooqSchemaSource
+ideaModule.dependsOn generateAllJooqSchemaSource
+compileJava.dependsOn generateAllJooqSchemaSource
+
+clean.dependsOn flywayClean
+
 
