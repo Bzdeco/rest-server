@@ -20,7 +20,7 @@ cd florist
 ```
 
 after running one can see "infinite" build message. It's ok. 
-Inspect the (http://localhost:4567/authors)
+Inspect the http://localhost:4567/authors
 
 ## importing project into IDE
 
@@ -29,5 +29,5 @@ Inspect the (http://localhost:4567/authors)
 ## api documentation
 
 api documentation is provided as (swagger.yaml). One can inspect and extend the file in any swagger editor
-e.g. (http://swagger.io/swagger-editor/)
+e.g. http://swagger.io/swagger-editor/
 
