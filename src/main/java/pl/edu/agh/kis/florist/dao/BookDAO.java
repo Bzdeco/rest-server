@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 
+import pl.edu.agh.kis.florist.db.tables.pojos.Books;
 import pl.edu.agh.kis.florist.db.tables.records.BooksRecord;
 import pl.edu.agh.kis.florist.model.Author;
 import pl.edu.agh.kis.florist.model.Book;
@@ -29,8 +30,8 @@ public class BookDAO {
 	
 	public List<Book> loadAllBooks() {
 		try (DSLContext create = DSL.using(DB_URL)) {
-			List<Book> books = create.selectFrom(BOOKS).fetchInto(Book.class);
-			List<Book> newBooks = books.stream()
+			List<Books> books = create.selectFrom(BOOKS).fetchInto(Books.class);
+			List<Book> newBooks = books.stream().map(Book::new)
 					.map(  b -> b.withAuthors(
 							authorRepository.loadAuthorsOfBookId(b.getId())
 							)
@@ -46,7 +47,7 @@ public class BookDAO {
 			BooksRecord record = create.newRecord(BOOKS,book);
 			record.store();
 			List<Author> stored = authorRepository.store(book.getAuthors());
-			Book retrieved = record.into(Book.class);
+			Book retrieved = new Book(record.into(Books.class));
 			return retrieved.withAuthors(stored);
 		}
 	}

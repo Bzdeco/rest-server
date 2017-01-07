@@ -5,6 +5,10 @@ import java.util.List;
 import pl.edu.agh.kis.florist.db.tables.pojos.Books;
 
 public class Book extends Books {
+	
+	public Book(Books b) {
+		super(b);
+	}
 
 	public Book(Integer id, String name, String isbn) {
 		super(id, name, isbn);

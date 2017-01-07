@@ -8,6 +8,7 @@ import static pl.edu.agh.kis.florist.db.Tables.BOOKS;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
@@ -16,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import pl.edu.agh.kis.florist.db.tables.pojos.AuthorBooks;
+import pl.edu.agh.kis.florist.db.tables.pojos.Books;
 import pl.edu.agh.kis.florist.db.tables.records.AuthorBooksRecord;
 import pl.edu.agh.kis.florist.db.tables.records.AuthorsRecord;
 import pl.edu.agh.kis.florist.db.tables.records.BooksRecord;
@@ -91,5 +93,14 @@ public class BookDAOTest {
 		assertThat(extractedAuthors.get(0)).extracting(Author::getFirstName, Author::getLastName).containsOnly("Michał",
 				"Bułchakow");
 		assertThat(extractedAuthors.get(0).getId()).isGreaterThan(0);
+	}
+	
+	@Test
+	public void test() {
+		Book b = new Book(null,"Mistrz i Małgorzata", "89898989");
+		BooksRecord bRec = create.newRecord(BOOKS, b);
+		bRec.store();
+		
+		List<Book> books = create.selectFrom(BOOKS).fetchInto(Books.class).stream().map(Book::new).collect(Collectors.toList());
 	}
 }
