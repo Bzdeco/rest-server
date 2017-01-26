@@ -10,10 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 
-import pl.edu.agh.kis.florist.dao.AuthorDAO;
-import pl.edu.agh.kis.florist.dao.BookDAO;
-import pl.edu.agh.kis.florist.exceptions.ParameterFormatException;
-import pl.edu.agh.kis.florist.model.ParameterFormatError;
+import pl.edu.agh.kis.florist.dao.FolderMetadataDAO;
+import pl.edu.agh.kis.florist.exceptions.*;
 import spark.Request;
 import spark.ResponseTransformer;
 
@@ -23,15 +21,32 @@ public class App {
 
 	public static void main(String[] args) {
 
-		final String AUTHORS_PATH = "/authors";
-		final String BOOKS_PATH = "/books";
-		final String BOOK_PATH = "/books/:bookid";
+		final String CREATE_USER = "/users/create_user";
+		final String LOG_USER = "/users/access";
+		final String DIRECTORIES_CREATE = "/files/:path/create_directory";
+		final String MOVE = "/files/:path/move";
+		final String DELETE = "/files/:path/delete";
+		final String METADATA = "/files/:path/get_meta_data";
+		final String RENAME = "/files/:path/rename";
+		final String FOLDER_CONTENTS = "/files/:path/list_folder_content";
+		final String UPLOAD = "/files/:path/upload";
+		final String DOWNLOAD = "/files/:path/download";
+		final String DIRECTORIES_PATH = "/directories";
 
 		final Gson gson = new Gson();
 		final ResponseTransformer json = gson::toJson;
-		
-		final BookController bookController = new BookController(new AuthorDAO(),new BookDAO());
-		//Changes port on which server listens
+
+		final UsersController usersController = new UsersController();
+		final FileMetadataController fileMetadataController = new FileMetadataController();
+		final FolderMetadataController folderMetadataController = new FolderMetadataController(new FolderMetadataDAO());
+		final FolderContentsController folderContentsController = new FolderContentsController();
+
+		// Enable HTTPS
+		String keyStoreLocation = "deploy/keystore.jks";
+		String keyStorePassword = "password";
+		secure(keyStoreLocation, keyStorePassword, null, null);
+
+		// Set port
 		port(4567);
 
 		//registers filter before processing of any request with special metothod stated below
@@ -41,36 +56,102 @@ public class App {
 			info(req);
 		});
 
-		//registers HTTP GET on resource /atuthors 
-		//and delegates processing into BookController
-		get(AUTHORS_PATH, (request, response) -> {
-			return bookController.handleAllAuthors(request, response);
-		}, json);
+		before("/files/*", (request, response) -> {
+			int ownerID = (int)usersController.handleVerifyAccess(request, response);
 
-		//registers HTTP POST on resource /atuthors 
-		//and delegates processing into BookController
-		post(AUTHORS_PATH, (request, response) -> {
-			return bookController.handleCreateNewAuthor(request,response);
-		}, json);
-
-		//registers HTTP GET on resource /books 
-		//and delegates processing into BookController
-		get(BOOKS_PATH, (request, response) -> {
-			return bookController.hadleAllBooks(request,response);
-		}, json);
-		
-		//registers HTTP GET on resource /books/{bookId} 
-		//and delegates processing into BookController
-		get(BOOK_PATH, (request, response) -> {
-			return bookController.handleSingleBook(request,response);
-		}, json);
-		
-		//handleSingleBook can throw ParameterFromatException which will be processed
-		//gracefully instead of 500 Internal Server Error
-		exception(ParameterFormatException.class,(ex,request,response) -> {
-			response.status(403);
-			response.body(gson.toJson(new ParameterFormatError(request.params())));
+			// modify request so it contains information about ownerID for following operation
+			request.attribute("ownerID", ownerID);
 		});
+
+		post(CREATE_USER, (request, response) -> {
+			return usersController.handleCreateUser(request, response);
+		}, json);
+
+		// Upload file
+		post(UPLOAD, (request, response) -> {
+			return fileMetadataController.handleUpload(request, response);
+		}, json);
+
+		// Create directory with a given path
+		put(DIRECTORIES_CREATE, (request, response) -> {
+			return folderMetadataController.handleCreateNewFolder(request, response);
+		}, json);
+
+		// Move existing directory or file to a new location
+		put(MOVE, (request, response) -> {
+			return ResourcesController.getSpecifiedController(request.params("path")).handleMove(request, response);
+		}, json);
+
+		// Rename existing directory or file
+		put(RENAME, (request, response) -> {
+			return ResourcesController.getSpecifiedController(request.params("path")).handleRename(request, response);
+		}, json);
+
+		// Delete existing directory or file
+		delete(DELETE, (request, response) -> {
+			return ResourcesController.getSpecifiedController(request.params("path")).handleDelete(request, response);
+		}, json);
+
+		get(LOG_USER, (request, response) -> {
+			return usersController.handleLogUser(request, response);
+		}, json); // FIXME or just return value?
+
+		get(METADATA, (request, response) -> {
+			return ResourcesController.getSpecifiedController(request.params("path")).handleGetMetadata(request, response);
+		}, json);
+
+		get(FOLDER_CONTENTS, (request, response) -> {
+			return folderContentsController.handleListFolderContents(request, response);
+		}, json);
+
+		// List all directories
+		get(DIRECTORIES_PATH, (request, response) -> {
+			return folderMetadataController.handleAllFolders(request, response);
+		}, json);
+
+		get(DOWNLOAD, (request, response) -> {
+			return fileMetadataController.handleDownload(request, response);
+		}, json);
+
+
+		// Exceptions
+
+		exception(InvalidUserException.class, (ex, request, response) -> {
+			response.status(400);
+			response.body(ex.getMessage());
+		});
+
+		exception(FileUploadSQLException.class, (ex, request, response) -> {
+			response.status(400); // bad request
+			response.body(ex.getMessage());
+		});
+
+		exception(AuthorizationRequiredException.class, (ex, request, response) -> {
+			response.status(401);
+			response.body(ex.getMessage());
+		});
+
+		exception(FailedAuthenticationException.class, (ex, request, response) -> {
+			response.status(403);
+			response.body(ex.getMessage());
+		});
+
+		exception(InvalidPathException.class, (ex, request, response) -> {
+			response.status(404);
+			response.body(ex.getMessage());
+		});
+
+
+		exception(PathFormatException.class, (ex, request, response) -> {
+			response.status(405);
+			response.body(ex.getMessage());
+		});
+
+		// session poprzez cookie
+		// kilka before do weryfikacji
+		// letsEncrypt.com (potrzeba publicznego ip)
+		// UUI generowanie
+		// login i hasło przesyłane w headerze (login:hasło)
 
 	}
 
