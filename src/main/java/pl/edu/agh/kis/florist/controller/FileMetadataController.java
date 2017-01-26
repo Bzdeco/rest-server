@@ -36,14 +36,16 @@ public class FileMetadataController extends ResourcesController {
     @Override
     public Object handleRename(Request request, Response response) {
         String sourcePathLower = request.params("path").toLowerCase();
-        File source = File.fromPathLower(sourcePathLower);
+        String newName = request.queryParams("new_name");
+        int ownerID = request.attribute("ownerID");
+
+        File source = (File)File.fromPathLower(sourcePathLower).setOwnerID(ownerID);
 
         // FIXME should work
         File fetched = new File(fileMetadataDAO.getMetadata(source));
 
-        String newName = request.queryParams("new_name");
         QueryParameters.validateResourceNameFormat(newName);
-        File renamed = File.fromPathDisplay(fetched.getPathDisplayToParent() + newName);
+        File renamed = (File)File.fromPathDisplay(fetched.getPathDisplayToParent() + newName).setOwnerID(ownerID);
 
         FileMetadata result = fileMetadataDAO.rename(source, renamed);
         response.status(SUCCESSFUL);
@@ -53,7 +55,9 @@ public class FileMetadataController extends ResourcesController {
     @Override
     public Object handleDelete(Request request, Response response) {
         String deletedFilePath = request.params("path").toLowerCase();
-        File deletedFile = File.fromPathLower(deletedFilePath);
+        int ownerID = request.attribute("ownerID");
+
+        File deletedFile = (File)File.fromPathLower(deletedFilePath).setOwnerID(ownerID);
 
         FileMetadata result = fileMetadataDAO.delete(deletedFile);
         response.status(SUCCESSFUL_DELETE);
@@ -63,7 +67,9 @@ public class FileMetadataController extends ResourcesController {
     @Override
     public Object handleGetMetadata(Request request, Response response) {
         String fileLowerPath = request.params("path").toLowerCase();
-        File retrieved = File.fromPathLower(fileLowerPath);
+        int ownerID = request.attribute("ownerID");
+
+        File retrieved = (File)File.fromPathLower(fileLowerPath).setOwnerID(ownerID);
 
         FileMetadata result = fileMetadataDAO.getMetadata(retrieved);
         response.status(SUCCESSFUL);
@@ -72,12 +78,13 @@ public class FileMetadataController extends ResourcesController {
 
     public Object handleUpload(Request request, Response response) {
         String uploadedFilePathDisplay = request.params("path");
+        int ownerID = request.attribute("ownerID");
         byte[] uploadedFileContent = request.body().getBytes();
 
         QueryParameters.validateFilePathFormat(uploadedFilePathDisplay);
 
         // FileMetadata
-        File uploadedFile = File.fromPathDisplay(uploadedFilePathDisplay);
+        File uploadedFile = (File)File.fromPathDisplay(uploadedFilePathDisplay).setOwnerID(ownerID);
         FileMetadata result = fileMetadataDAO.upload(uploadedFile, uploadedFileContent.length);
 
         // FileContents
@@ -90,13 +97,15 @@ public class FileMetadataController extends ResourcesController {
 
     public Object handleDownload(Request request, Response response) {
         String downloadedFilePathLower = request.params("path").toLowerCase();
+        int ownerID = request.attribute("ownerID");
 
         QueryParameters.validateFilePathFormat(downloadedFilePathLower);
 
-        File downloadedFile = File.fromPathLower(downloadedFilePathLower);
+        File downloadedFile = (File)File.fromPathLower(downloadedFilePathLower).setOwnerID(ownerID);
         FileMetadata result = fileMetadataDAO.download(downloadedFile);
         String downloadedFileContent = fileContentsDAO.download(downloadedFile);
 
+        // FIXME file metadata to header, content to body
         response.header("X-File-Metadata", downloadedFileContent);
         response.status(SUCCESSFUL);
         return result;

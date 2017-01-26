@@ -54,6 +54,7 @@ public class FolderMetadataControllerTest {
         FolderMetadataController controller = new FolderMetadataController(new FolderMetadataDAO());
 
         when(request.params("path")).thenReturn("/newFolder/");
+        when(request.attribute("ownerID")).thenReturn(1);
         FolderMetadata folder = (FolderMetadata)controller.handleCreateNewFolder(request, response);
 
         assertThat(folder).isNotNull();
@@ -61,7 +62,7 @@ public class FolderMetadataControllerTest {
                 FolderMetadata::getName,
                 FolderMetadata::getPathLower,
                 FolderMetadata::getPathDisplay,
-                FolderMetadata::getOwnerId).containsOnly("newFolder", "/newfolder/", "/newFolder/", 0);
+                FolderMetadata::getOwnerId).containsOnly("newFolder", "/newfolder/", "/newFolder/", 1);
     }
 
     @Test
@@ -71,6 +72,7 @@ public class FolderMetadataControllerTest {
         FolderMetadataController controller = new FolderMetadataController(new FolderMetadataDAO());
 
         when(request.params("path")).thenReturn("/parent/inside/");
+        when(request.attribute("ownerID")).thenReturn(0);
         thrown.expect(InvalidPathException.class);
         thrown.expectMessage("Parent folder /parent/ does not exist");
 

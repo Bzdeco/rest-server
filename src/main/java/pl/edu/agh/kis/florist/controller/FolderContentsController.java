@@ -17,12 +17,13 @@ public class FolderContentsController {
 
     public Object handleListFolderContents(Request request, Response response) {
         String pathDisplay = request.params("path");
+        int ownerID = request.attribute("ownerID");
         QueryParameters.resolveResourceTypeFromPath(pathDisplay);
 
         String recursiveValue = request.queryParams("recursive");
         boolean recursive = recursiveValue.equals("true");
 
-        Folder folder = Folder.fromPathDisplay(pathDisplay);
+        Folder folder = Folder.fromPathDisplay(pathDisplay).setOwnerID(ownerID);
         FolderMetadata fetchedFolder = folderMetadataDAO.getMetadata(folder);
 
         return folderContentsDAO.getFolderContents(new Folder(fetchedFolder), recursive);

@@ -48,19 +48,20 @@ public class Folder extends FolderMetadata implements Resource {
                 getPathLower(),
                 getPathDisplay(),
                 getParentFolderId(),
-                Resource.getCurrentTime(),
+                getServerCreatedAt(),
                 getOwnerId()
         );
     }
 
-    public Folder updateFolderOwnerId(int ownerId) {
+    @Override
+    public Folder setOwnerID(int ownerId) {
         return new Folder(
                 getFolderId(),
                 getName(),
                 getPathLower(),
                 getPathDisplay(),
                 getParentFolderId(),
-                Resource.getCurrentTime(),
+                getServerCreatedAt(),
                 ownerId
         );
     }
@@ -82,19 +83,6 @@ public class Folder extends FolderMetadata implements Resource {
     @Override
     public Resource updateChangedTime() {
         return this;
-    }
-
-    @Override
-    public Resource setOwnerID(int ownerID) {
-        return new Folder(
-                getFolderId(),
-                getName(),
-                getPathLower(),
-                getPathDisplay(),
-                getParentFolderId(),
-                getServerCreatedAt(),
-                ownerID
-        );
     }
 
     @Override

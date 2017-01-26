@@ -84,7 +84,7 @@ public class File extends FileMetadata implements Resource {
     }
 
     @Override
-    public Resource setOwnerID(int ownerID) {
+    public File setOwnerID(int ownerID) {
         return new File(
                 getFileId(),
                 getName(),

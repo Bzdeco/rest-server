@@ -27,11 +27,12 @@ public class FolderMetadataController extends ResourcesController {
 
     public Object handleCreateNewFolder(Request request, Response response) {
         String pathDisplay = request.params("path");
+        int ownerID = request.attribute("ownerID");
 
         if(!QueryParameters.validateFolderPathFormat(pathDisplay))
             throw new PathFormatException("Path " + pathDisplay + " has wrong format");
 
-        Folder folderMetadata = Folder.fromPathDisplay(pathDisplay).updateCreatedTime();
+        Folder folderMetadata = (Folder)Folder.fromPathDisplay(pathDisplay).updateCreatedTime().setOwnerID(ownerID);
 
         FolderMetadata result = folderMetadataDAO.store(folderMetadata);
         response.status(CREATED);
@@ -43,13 +44,14 @@ public class FolderMetadataController extends ResourcesController {
         // Moved folder can be specified by pathLower or pathDisplay
         String oldPath = request.params("path").toLowerCase();
         String newPath = request.queryParams("new_path");
+        int ownerID = request.attribute("ownerID");
 
         if(!QueryParameters.validateFolderPathFormat(newPath))
             throw new PathFormatException("Path " + newPath + " has wrong format");
 
         // Create folder objects from given paths
-        Folder source = Folder.fromPathLower(oldPath);
-        Folder dest = Folder.fromPathDisplay(newPath);
+        Folder source = (Folder)Folder.fromPathLower(oldPath).setOwnerID(ownerID);
+        Folder dest = (Folder)Folder.fromPathDisplay(newPath).setOwnerID(ownerID);
 
         FolderMetadata result = folderMetadataDAO.move(source, dest);
         response.status(SUCCESSFUL);
@@ -59,8 +61,9 @@ public class FolderMetadataController extends ResourcesController {
     @Override
     public Object handleDelete(Request request, Response response) {
         String deletedFolderPath = request.params("path").toLowerCase();
+        int ownerID = request.attribute("ownerID");
 
-        Folder deletedFolder = Folder.fromPathLower(deletedFolderPath);
+        Folder deletedFolder = (Folder)Folder.fromPathLower(deletedFolderPath).setOwnerID(ownerID);
         FolderMetadata result = folderMetadataDAO.delete(deletedFolder);
         response.status(SUCCESSFUL_DELETE);
         return result;
@@ -69,8 +72,9 @@ public class FolderMetadataController extends ResourcesController {
     @Override
     public Object handleGetMetadata(Request request, Response response) {
         String folderLowerPath = request.params("path").toLowerCase();
+        int ownerID = request.attribute("ownerID");
 
-        Folder retrieved = Folder.fromPathLower(folderLowerPath);
+        Folder retrieved = (Folder)Folder.fromPathLower(folderLowerPath).setOwnerID(ownerID);
         FolderMetadata result = folderMetadataDAO.getMetadata(retrieved);
         response.status(SUCCESSFUL);
         return result;
@@ -79,12 +83,14 @@ public class FolderMetadataController extends ResourcesController {
     @Override
     public Object handleRename(Request request, Response response) {
         String sourcePathLower = request.params("path").toLowerCase();
-        Folder source = Folder.fromPathLower(sourcePathLower);
+        String renamedName = request.queryParams("new_name");
+        int ownerID = request.attribute("ownerID");
+
+        Folder source = (Folder)Folder.fromPathLower(sourcePathLower).setOwnerID(ownerID);
         Folder fetchedSource = new Folder(folderMetadataDAO.getMetadata(source));
 
-        String renamedName = request.queryParams("new_name");
-        // TODO validate name
-        Folder renamed = Folder.fromPathDisplay(fetchedSource.getPathDisplayToParent() + renamedName + "/");
+        QueryParameters.validateResourceNameFormat(renamedName);
+        Folder renamed = (Folder)Folder.fromPathDisplay(fetchedSource.getPathDisplayToParent() + renamedName + "/").setOwnerID(ownerID);
 
         FolderMetadata result = folderMetadataDAO.rename(source, renamed);
         response.status(SUCCESSFUL);

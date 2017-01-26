@@ -90,7 +90,7 @@ public class FolderMetadataDAO extends ResourcesDAO {
 
                             source = source
                                     .updateFolderId(movedRecord.getFolderId())
-                                    .updateFolderOwnerId(movedRecord.getOwnerId());
+                                    .setOwnerID(movedRecord.getOwnerId());
 
                             FolderContents folderContents = folderContentsDAO.getFolderContents(source, false);
 
@@ -111,7 +111,10 @@ public class FolderMetadataDAO extends ResourcesDAO {
 
                             // Move folder file contents
                             for (File childFile : folderContents.getFiles()) {
-                                Folder childDest = Folder.fromPathDisplay(targetRecord.getPathDisplay() + movedRecord.getName() + "/");
+                                // FIXME possibly might not work
+                                Folder childDest = (Folder)Folder
+                                        .fromPathDisplay(targetRecord.getPathDisplay() + movedRecord.getName() + "/")
+                                        .setOwnerID(source.getOwnerId());
                                 fileMetadataDAO.move(childFile, childDest);
                             }
 
@@ -149,7 +152,7 @@ public class FolderMetadataDAO extends ResourcesDAO {
                     // Get folder contents before it's renamed
                     source = source
                             .updateFolderId(renamedRecord.getFolderId())
-                            .updateFolderOwnerId(renamedRecord.getOwnerId());
+                            .setOwnerID(renamedRecord.getOwnerId());
 
                     FolderContents folderContents = folderContentsDAO.getFolderContents(source, false);
 
@@ -172,8 +175,6 @@ public class FolderMetadataDAO extends ResourcesDAO {
                                 childFile.getServerCreatedAt(), Resource.getCurrentTime(),
                                 childFile.getOwnerId()
                         );
-                        System.out.println("---- Child file: " + childFile);
-                        System.out.println("---- Renamed file: " + fileWithRenamedParent);
                         fileMetadataDAO.rename(childFile, fileWithRenamedParent);
                     }
 
@@ -184,7 +185,8 @@ public class FolderMetadataDAO extends ResourcesDAO {
                                 childFolder.getName(),
                                 renamed.getPathLower() + childFolder.getName().toLowerCase() + "/",
                                 renamed.getPathDisplay() + childFolder.getName() + "/",
-                                childFolder.getParentFolderId(), childFolder.getServerCreatedAt(),
+                                childFolder.getParentFolderId(),
+                                childFolder.getServerCreatedAt(),
                                 childFolder.getOwnerId()
                         );
                         // Rename recursively further
@@ -215,7 +217,7 @@ public class FolderMetadataDAO extends ResourcesDAO {
 
                 folder = folder
                         .updateFolderId(deletedFolder.getFolderId())
-                        .updateFolderOwnerId(deletedFolder.getOwnerId());
+                        .setOwnerID(deletedFolder.getOwnerId());
 
                 FolderContents folderContents = folderContentsDAO.getFolderContents(folder, false);
 
