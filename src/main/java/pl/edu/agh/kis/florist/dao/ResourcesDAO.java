@@ -18,6 +18,14 @@ import static pl.edu.agh.kis.florist.db.Tables.FOLDER_METADATA;
  */
 public class ResourcesDAO extends DefaultDAO {
 
+    protected ResourcesDAO() {
+        super();
+    }
+
+    protected ResourcesDAO(String dbUrl) {
+        super(dbUrl);
+    }
+
     public Optional<FolderMetadataRecord> fetchRecordFromFolder(Folder folder, DSLContext create) {
         String pathLower = folder.getPathLower();
         int ownerID = folder.getOwnerId();

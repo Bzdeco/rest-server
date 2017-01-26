@@ -19,7 +19,13 @@ import java.util.UUID;
  */
 public class SessionDataDAO extends DefaultDAO {
 
-    private static final float ACCEPTED_IDLE_TIME = 1f; // in minutes
+    public SessionDataDAO() {
+        super();
+    }
+
+    public SessionDataDAO(String dbUrl) {
+        super(dbUrl);
+    }
 
     public String createSessionIdForUser(Users user) {
         try(DSLContext create = DSL.using(DB_URL)) {

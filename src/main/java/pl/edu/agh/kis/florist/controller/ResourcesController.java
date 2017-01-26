@@ -21,7 +21,7 @@ public abstract class ResourcesController extends DefaultController {
         Class<?> resourceTypeClass = QueryParameters.resolveResourceTypeFromPath(resourcePathLower);
 
         if(resourceTypeClass.equals(FolderMetadata.class)) {
-            return new FolderMetadataController(new FolderMetadataDAO());
+            return new FolderMetadataController();
         }
         else if(resourceTypeClass.equals(FileMetadata.class)) {
             // TODO correct constructor

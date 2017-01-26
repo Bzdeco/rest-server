@@ -16,9 +16,19 @@ import spark.Response;
  */
 public class FileMetadataController extends ResourcesController {
 
-    private final FileMetadataDAO fileMetadataDAO = new FileMetadataDAO();
-    private final FileContentsDAO fileContentsDAO = new FileContentsDAO();
+    private final FileMetadataDAO fileMetadataDAO;
+    private final FileContentsDAO fileContentsDAO;
     private final Gson gson = new Gson();
+
+    public FileMetadataController() {
+        this.fileMetadataDAO = new FileMetadataDAO();
+        this.fileContentsDAO = new FileContentsDAO();
+    }
+
+    public FileMetadataController(FileMetadataDAO fileMetadataDAO, FileContentsDAO fileContentsDAO) {
+        this.fileMetadataDAO = fileMetadataDAO;
+        this.fileContentsDAO = fileContentsDAO;
+    }
 
     @Override
     public Object handleMove(Request request, Response response) {
@@ -111,7 +121,6 @@ public class FileMetadataController extends ResourcesController {
         File downloadedFile = File.fromPathLower(downloadedFilePathLower).setOwnerID(ownerID);
         FileMetadata downloadedFileMetadata = fileMetadataDAO.download(downloadedFile);
         String downloadedFileContent = fileContentsDAO.download(new File(downloadedFileMetadata));
-        System.out.println("==============================================");
 
         response.header("X-File-Metadata", gson.toJson(downloadedFileMetadata));
         response.status(SUCCESSFUL);

@@ -50,13 +50,11 @@ public class App {
 		// Set port
 		port(4567);
 
-		// Activate SessionManager
+		// Run SessionManager
 		Thread sessionManagerThread = new Thread(new SessionManager());
 		sessionManagerThread.start();
 
-		//registers filter before processing of any request with special metothod stated below
-		//this method is run to log request with logger
-		//but similar method can be used to check user authorisation
+		// Logger
 		before("/*/", (req, res) -> {
 			info(req);
 		});
@@ -65,7 +63,7 @@ public class App {
 		before("/files/*", (request, response) -> {
 			int ownerID = (int)usersController.handleVerifyAccess(request, response);
 
-			// modify request so it contains information about ownerID for following operation
+			// Modify request so it contains information about ownerID for upcoming operations
 			request.attribute("ownerID", ownerID);
 		});
 
@@ -102,7 +100,7 @@ public class App {
 		// Log in user (assign sessionID for user)
 		get(LOG_USER, (request, response) -> {
 			return usersController.handleLogUser(request, response);
-		}, json); // FIXME or just return value?
+		}, json);
 
 		// Get metadata of the resource
 		get(METADATA, (request, response) -> {
@@ -156,13 +154,6 @@ public class App {
 			response.status(405);
 			response.body(ex.getMessage());
 		});
-
-		// session poprzez cookie
-		// kilka before do weryfikacji
-		// letsEncrypt.com (potrzeba publicznego ip)
-		// UUI generowanie
-		// login i hasło przesyłane w headerze (login:hasło)
-
 	}
 
 	private static void info(Request req) {

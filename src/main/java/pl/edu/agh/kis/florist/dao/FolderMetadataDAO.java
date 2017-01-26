@@ -21,8 +21,32 @@ import java.util.Optional;
  */
 public class FolderMetadataDAO extends ResourcesDAO {
 
-    private final FolderContentsDAO folderContentsDAO = new FolderContentsDAO();
-    private final FileMetadataDAO fileMetadataDAO = new FileMetadataDAO();
+    private final FolderContentsDAO folderContentsDAO;
+    private final FileMetadataDAO fileMetadataDAO;
+
+    public FolderMetadataDAO() {
+        super();
+        this.folderContentsDAO = new FolderContentsDAO();
+        this.fileMetadataDAO = new FileMetadataDAO();
+    }
+
+    public FolderMetadataDAO(String dbUrl) {
+        super(dbUrl);
+        this.folderContentsDAO = new FolderContentsDAO();
+        this.fileMetadataDAO = new FileMetadataDAO();
+    }
+
+    public FolderMetadataDAO(FolderContentsDAO folderContentsDAO, FileMetadataDAO fileMetadataDAO) {
+        super();
+        this.folderContentsDAO = folderContentsDAO;
+        this.fileMetadataDAO = fileMetadataDAO;
+    }
+
+    public FolderMetadataDAO(String dbUrl, FolderContentsDAO folderContentsDAO, FileMetadataDAO fileMetadataDAO) {
+        super(dbUrl);
+        this.folderContentsDAO = folderContentsDAO;
+        this.fileMetadataDAO = fileMetadataDAO;
+    }
 
     public FolderMetadata store(Folder folder) {
         try(DSLContext create = DSL.using(DB_URL)) {
@@ -55,15 +79,11 @@ public class FolderMetadataDAO extends ResourcesDAO {
             if(movedOpt.isPresent()) {
                 FolderMetadataRecord movedRecord = movedOpt.get();
                 // Check if target path exists
-                System.out.println(" ----------------- FOUND MOVED");
-                System.out.println(" -------------------" + newParentPath  + " " + source.getPathLowerToParent());
                 Optional<FolderMetadataRecord> targetOpt = fetchRecordFromFolder(dest, create);
 
                 // If we don't move folder to same parent folder and parent folder is root or exists and is not the same folder we move
                 if(!newParentPath.equals(source.getPathLowerToParent())) {
-                    System.out.println("-------------- CONDITION MET");
                     if (targetOpt.isPresent()) {
-                        System.out.println("------------ TARGET IS PRESENT");
                         FolderMetadataRecord targetRecord = targetOpt.get();
 
                         System.out.println(movedRecord + "\n" + targetRecord);
@@ -116,7 +136,7 @@ public class FolderMetadataDAO extends ResourcesDAO {
                             // Move folder file contents
                             for (File childFile : folderContents.getFiles()) {
                                 // FIXME possibly might not work
-                                Folder childDest = (Folder)Folder
+                                Folder childDest = Folder
                                         .fromPathDisplay(targetRecord.getPathDisplay() + movedRecord.getName() + "/")
                                         .setOwnerID(source.getOwnerId());
                                 fileMetadataDAO.move(childFile, childDest);

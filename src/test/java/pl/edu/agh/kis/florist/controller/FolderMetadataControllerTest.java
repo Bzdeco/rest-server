@@ -10,6 +10,7 @@ import org.junit.rules.ExpectedException;
 import pl.edu.agh.kis.florist.dao.FolderMetadataDAO;
 import pl.edu.agh.kis.florist.db.tables.pojos.FolderMetadata;
 import pl.edu.agh.kis.florist.exceptions.InvalidPathException;
+import pl.edu.agh.kis.florist.model.Folder;
 import spark.Request;
 import spark.Response;
 
@@ -77,6 +78,40 @@ public class FolderMetadataControllerTest {
         thrown.expectMessage("Parent folder /parent/ does not exist");
 
         FolderMetadata folder = (FolderMetadata)controller.handleCreateNewFolder(request, response);
+    }
+
+    @Test
+    public void handleMoveFolderBetweenTwoExistingFolders() {
+        Request request = mock(Request.class);
+        Response response = mock(Response.class);
+        FolderMetadataDAO dao = new FolderMetadataDAO();
+        Folder folder1 = Folder.fromPathDisplay("/Folder1/").setOwnerID(1);
+        Folder folder2 = Folder.fromPathDisplay("/Folder2/").setOwnerID(1);
+        Folder moved = Folder.fromPathDisplay("/folder1/Moved/").setOwnerID(1);
+        dao.store(folder1);
+        dao.store(folder2);
+        dao.store(moved);
+        FolderMetadataController controller = new FolderMetadataController(dao);
+
+        when(request.params("path")).thenReturn("/folder1/moved/");
+        when(request.queryParams("new_path")).thenReturn("/folder2/");
+        when(request.attribute("ownerID")).thenReturn(1);
+
+        FolderMetadata result = (FolderMetadata)controller.handleMove(request, response);
+
+        assertThat(result).extracting(
+                FolderMetadata::getName,
+                FolderMetadata::getPathLower,
+                FolderMetadata::getPathDisplay,
+                FolderMetadata::getOwnerId).containsOnly("Moved", "/folder2/moved/", "/Folder2/Moved/", 1);
+
+    }
+
+    @Test
+    public void handleRenameFolderWhichAffectsItsChildren() {
+        Request request = mock(Request.class);
+        Response response = mock(Response.class);
+        // TODO
     }
 
 }

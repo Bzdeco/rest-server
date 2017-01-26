@@ -17,6 +17,14 @@ import static pl.edu.agh.kis.florist.db.Tables.USERS;
  */
 public class UsersDAO extends DefaultDAO {
 
+    public UsersDAO() {
+        super();
+    }
+
+    public UsersDAO(String dbUrl) {
+        super(dbUrl);
+    }
+
     public Users create(Users user) {
         try(DSLContext create = DSL.using(DB_URL)) {
 

@@ -15,7 +15,27 @@ import java.util.List;
  */
 public class SessionManager extends DefaultDAO implements Runnable {
 
-    private static final int ACCEPTED_IDLE_TIME = 1; // in minutes
+    private final int ACCEPTED_IDLE_TIME; // in minutes
+
+    public SessionManager() {
+        super();
+        ACCEPTED_IDLE_TIME = 1;
+    }
+
+    public SessionManager(int acceptedIdleTime) {
+        super();
+        ACCEPTED_IDLE_TIME = acceptedIdleTime;
+    }
+
+    public SessionManager(String dbUrl) {
+        super(dbUrl);
+        ACCEPTED_IDLE_TIME = 1;
+    }
+
+    public SessionManager(String dbUrl, int acceptedIdleTime) {
+        super(dbUrl);
+        ACCEPTED_IDLE_TIME = acceptedIdleTime;
+    }
 
     @Override
     public void run() {

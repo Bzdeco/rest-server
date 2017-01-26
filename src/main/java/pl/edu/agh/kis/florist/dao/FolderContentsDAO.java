@@ -16,9 +16,15 @@ import java.util.List;
 /**
  * Created by bzdeco on 16.01.17.
  */
-public class FolderContentsDAO {
+public class FolderContentsDAO extends DefaultDAO {
 
-    private final String DB_URL = "jdbc:sqlite:test.db";
+    public FolderContentsDAO() {
+        super();
+    }
+
+    public FolderContentsDAO(String dbUrl) {
+        super(dbUrl);
+    }
 
     // must get folder with ID AND OWNER ID
     public FolderContents getFolderContents(Folder folder, boolean recursive) {

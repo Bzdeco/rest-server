@@ -16,6 +16,15 @@ import static pl.edu.agh.kis.florist.db.Tables.FILE_CONTENTS;
  * Created by bzdeco on 21.01.17.
  */
 public class FileContentsDAO extends ResourcesDAO {
+
+    public FileContentsDAO() {
+        super();
+    }
+
+    public FileContentsDAO(String dbUrl) {
+        super(dbUrl);
+    }
+
     public String download(File downloadedFile) {
         try(DSLContext create = DSL.using(DB_URL)) {
             FileContents fileContents = create
@@ -39,10 +48,11 @@ public class FileContentsDAO extends ResourcesDAO {
         }
     }
 
+    // JDBC doesn't support createBlob yet
     private Blob uploadFileContent(byte[] fileContent) {
         try {
             Connection con = DriverManager.getConnection(DB_URL);
-            Blob uploadedFileBlob = con.createBlob(); // FIXME this throws exception
+            Blob uploadedFileBlob = con.createBlob();
             uploadedFileBlob.setBytes(1, fileContent);
 
             String sql = "INSERT INTO file_contents (contents) VALUES(?)";

@@ -12,8 +12,18 @@ import spark.Response;
  */
 public class FolderContentsController {
 
-    private final FolderMetadataDAO folderMetadataDAO = new FolderMetadataDAO();
-    private final FolderContentsDAO folderContentsDAO = new FolderContentsDAO();
+    private final FolderMetadataDAO folderMetadataDAO;
+    private final FolderContentsDAO folderContentsDAO;
+
+    public FolderContentsController() {
+        this.folderMetadataDAO = new FolderMetadataDAO();
+        this.folderContentsDAO = new FolderContentsDAO();
+    }
+
+    public FolderContentsController(FolderMetadataDAO folderMetadataDAO, FolderContentsDAO folderContentsDAO) {
+        this.folderMetadataDAO = folderMetadataDAO;
+        this.folderContentsDAO = folderContentsDAO;
+    }
 
     public Object handleListFolderContents(Request request, Response response) {
         String pathDisplay = request.params("path");

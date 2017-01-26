@@ -14,8 +14,18 @@ import java.util.Optional;
  */
 public class UsersController extends DefaultController {
 
-    private final UsersDAO usersDAO = new UsersDAO();
-    private final SessionDataDAO sessionDataDAO = new SessionDataDAO();
+    private final UsersDAO usersDAO;
+    private final SessionDataDAO sessionDataDAO;
+
+    public UsersController() {
+        this.usersDAO = new UsersDAO();
+        this.sessionDataDAO = new SessionDataDAO();
+    }
+
+    public UsersController(UsersDAO usersDAO, SessionDataDAO sessionDataDAO) {
+        this.usersDAO = usersDAO;
+        this.sessionDataDAO = sessionDataDAO;
+    }
 
     public Object handleCreateUser(Request request, Response response) {
         Users user = gson.fromJson(request.body(), Users.class);

@@ -21,6 +21,14 @@ import static pl.edu.agh.kis.florist.db.Tables.FOLDER_METADATA;
  */
 public class FileMetadataDAO extends ResourcesDAO {
 
+    public FileMetadataDAO() {
+        super();
+    }
+
+    public FileMetadataDAO(String dbUrl) {
+        super(dbUrl);
+    }
+
     public FileMetadata move(File source, Folder dest) {
         try(DSLContext create = DSL.using(DB_URL)) {
             Optional<FileMetadataRecord> movedOpt = fetchRecordFromFile(source, create);
