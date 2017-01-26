@@ -251,9 +251,9 @@ public class FolderMetadataDAOTest {
         folderDAO.store(parent2);
         folderDAO.store(child1);
         folderDAO.loadAllFolders();
-        fileDAO.upload(file1, 0);
-        fileDAO.upload(file2, 0);
-        fileDAO.upload(file3, 0);
+        fileDAO.upload(file1);
+        fileDAO.upload(file2);
+        fileDAO.upload(file3);
 
         Folder renamed = new Folder(1, "renamed", "/renamed/", "/renamed/", 0, Resource.getCurrentTime(), 1);
         folderDAO.rename(grandparent, renamed);

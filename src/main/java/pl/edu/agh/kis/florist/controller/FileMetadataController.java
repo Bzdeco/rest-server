@@ -1,9 +1,11 @@
 package pl.edu.agh.kis.florist.controller;
 
+import com.google.gson.Gson;
 import pl.edu.agh.kis.florist.dao.FileContentsDAO;
 import pl.edu.agh.kis.florist.dao.FileMetadataDAO;
 import pl.edu.agh.kis.florist.db.tables.pojos.FileContents;
 import pl.edu.agh.kis.florist.db.tables.pojos.FileMetadata;
+import pl.edu.agh.kis.florist.exceptions.InvalidPathException;
 import pl.edu.agh.kis.florist.model.File;
 import pl.edu.agh.kis.florist.model.Folder;
 import spark.Request;
@@ -16,6 +18,7 @@ public class FileMetadataController extends ResourcesController {
 
     private final FileMetadataDAO fileMetadataDAO = new FileMetadataDAO();
     private final FileContentsDAO fileContentsDAO = new FileContentsDAO();
+    private final Gson gson = new Gson();
 
     @Override
     public Object handleMove(Request request, Response response) {
@@ -25,8 +28,8 @@ public class FileMetadataController extends ResourcesController {
         int ownerID = request.attribute("ownerID");
 
         // Create file and folder objects from given paths
-        File source = (File)File.fromPathLower(oldPath).setOwnerID(ownerID);
-        Folder dest = (Folder)Folder.fromPathDisplay(newPath).setOwnerID(ownerID);
+        File source = File.fromPathLower(oldPath).setOwnerID(ownerID);
+        Folder dest = Folder.fromPathDisplay(newPath).setOwnerID(ownerID);
 
         FileMetadata result = fileMetadataDAO.move(source, dest);
         response.status(SUCCESSFUL);
@@ -39,13 +42,13 @@ public class FileMetadataController extends ResourcesController {
         String newName = request.queryParams("new_name");
         int ownerID = request.attribute("ownerID");
 
-        File source = (File)File.fromPathLower(sourcePathLower).setOwnerID(ownerID);
+        File source = File.fromPathLower(sourcePathLower).setOwnerID(ownerID);
 
         // FIXME should work
         File fetched = new File(fileMetadataDAO.getMetadata(source));
 
         QueryParameters.validateResourceNameFormat(newName);
-        File renamed = (File)File.fromPathDisplay(fetched.getPathDisplayToParent() + newName).setOwnerID(ownerID);
+        File renamed = File.fromPathDisplay(fetched.getPathDisplayToParent() + newName).setOwnerID(ownerID);
 
         FileMetadata result = fileMetadataDAO.rename(source, renamed);
         response.status(SUCCESSFUL);
@@ -57,7 +60,7 @@ public class FileMetadataController extends ResourcesController {
         String deletedFilePath = request.params("path").toLowerCase();
         int ownerID = request.attribute("ownerID");
 
-        File deletedFile = (File)File.fromPathLower(deletedFilePath).setOwnerID(ownerID);
+        File deletedFile = File.fromPathLower(deletedFilePath).setOwnerID(ownerID);
 
         FileMetadata result = fileMetadataDAO.delete(deletedFile);
         response.status(SUCCESSFUL_DELETE);
@@ -69,7 +72,7 @@ public class FileMetadataController extends ResourcesController {
         String fileLowerPath = request.params("path").toLowerCase();
         int ownerID = request.attribute("ownerID");
 
-        File retrieved = (File)File.fromPathLower(fileLowerPath).setOwnerID(ownerID);
+        File retrieved = File.fromPathLower(fileLowerPath).setOwnerID(ownerID);
 
         FileMetadata result = fileMetadataDAO.getMetadata(retrieved);
         response.status(SUCCESSFUL);
@@ -81,11 +84,14 @@ public class FileMetadataController extends ResourcesController {
         int ownerID = request.attribute("ownerID");
         byte[] uploadedFileContent = request.body().getBytes();
 
-        QueryParameters.validateFilePathFormat(uploadedFilePathDisplay);
+        if(!QueryParameters.validateFilePathFormat(uploadedFilePathDisplay))
+            throw new InvalidPathException("File path " + uploadedFilePathDisplay + " has wrong format");
 
         // FileMetadata
-        File uploadedFile = (File)File.fromPathDisplay(uploadedFilePathDisplay).setOwnerID(ownerID);
-        FileMetadata result = fileMetadataDAO.upload(uploadedFile, uploadedFileContent.length);
+        File uploadedFile = File.fromPathDisplay(uploadedFilePathDisplay)
+                .setOwnerID(ownerID)
+                .setSize(uploadedFileContent.length);
+        FileMetadata result = fileMetadataDAO.upload(uploadedFile);
 
         // FileContents
         FileContents fileContents = new FileContents(result.getFileId(), uploadedFileContent);
@@ -99,15 +105,16 @@ public class FileMetadataController extends ResourcesController {
         String downloadedFilePathLower = request.params("path").toLowerCase();
         int ownerID = request.attribute("ownerID");
 
-        QueryParameters.validateFilePathFormat(downloadedFilePathLower);
+        if(!QueryParameters.validateFilePathFormat(downloadedFilePathLower))
+            throw new InvalidPathException("File path " + downloadedFilePathLower + " has wrong format");
 
-        File downloadedFile = (File)File.fromPathLower(downloadedFilePathLower).setOwnerID(ownerID);
-        FileMetadata result = fileMetadataDAO.download(downloadedFile);
-        String downloadedFileContent = fileContentsDAO.download(downloadedFile);
+        File downloadedFile = File.fromPathLower(downloadedFilePathLower).setOwnerID(ownerID);
+        FileMetadata downloadedFileMetadata = fileMetadataDAO.download(downloadedFile);
+        String downloadedFileContent = fileContentsDAO.download(new File(downloadedFileMetadata));
+        System.out.println("==============================================");
 
-        // FIXME file metadata to header, content to body
-        response.header("X-File-Metadata", downloadedFileContent);
+        response.header("X-File-Metadata", gson.toJson(downloadedFileMetadata));
         response.status(SUCCESSFUL);
-        return result;
+        return downloadedFileContent;
     }
 }

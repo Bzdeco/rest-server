@@ -54,15 +54,19 @@ public class FolderMetadataDAO extends ResourcesDAO {
             // Check if folder exists
             if(movedOpt.isPresent()) {
                 FolderMetadataRecord movedRecord = movedOpt.get();
-
                 // Check if target path exists
+                System.out.println(" ----------------- FOUND MOVED");
+                System.out.println(" -------------------" + newParentPath  + " " + source.getPathLowerToParent());
                 Optional<FolderMetadataRecord> targetOpt = fetchRecordFromFolder(dest, create);
 
                 // If we don't move folder to same parent folder and parent folder is root or exists and is not the same folder we move
                 if(!newParentPath.equals(source.getPathLowerToParent())) {
-
+                    System.out.println("-------------- CONDITION MET");
                     if (targetOpt.isPresent()) {
+                        System.out.println("------------ TARGET IS PRESENT");
                         FolderMetadataRecord targetRecord = targetOpt.get();
+
+                        System.out.println(movedRecord + "\n" + targetRecord);
 
                         // Check if it won't override existing folder
                         Folder result = new Folder(

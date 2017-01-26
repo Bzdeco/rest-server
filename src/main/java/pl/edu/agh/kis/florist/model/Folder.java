@@ -32,13 +32,13 @@ public class Folder extends FolderMetadata implements Resource {
         String pathLower = pathDisplay.toLowerCase();
         String name = Resource.getNameFromPath(pathDisplay);
 
-        return new Folder(null, name, pathLower, pathDisplay, 0, Resource.getCurrentTime(), 0);
+        return new Folder(null, name, pathLower, pathDisplay, 0, null, 0);
     }
 
     public static Folder fromPathLower(String pathLower) {
         // This name will be always lowercase, but with correct length
         String lowercaseName = Resource.getNameFromPath(pathLower);
-        return new Folder(null, lowercaseName, pathLower, "", 0, Resource.getCurrentTime(), 0);
+        return new Folder(null, lowercaseName, pathLower, "", 0, null, 0);
     }
 
     public Folder updateFolderId(int id) {
@@ -87,7 +87,11 @@ public class Folder extends FolderMetadata implements Resource {
 
     @Override
     public String getPathLowerToParent() {
-        return getPathDisplayToParent().toLowerCase();
+        // This path should be already well formatted with forward slashes
+        int parentPathEnd = getPathLower().length() - (getName().length() + 1);
+        String pathToParent = getPathLower().substring(0, parentPathEnd);
+
+        return pathToParent;
     }
 
     public String getPathDisplayToParent() {
@@ -96,15 +100,5 @@ public class Folder extends FolderMetadata implements Resource {
         String pathToParent = getPathDisplay().substring(0, parentPathEnd);
 
         return pathToParent;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
     }
 }

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.Gson;
 
 import pl.edu.agh.kis.florist.dao.FolderMetadataDAO;
+import pl.edu.agh.kis.florist.dao.SessionManager;
 import pl.edu.agh.kis.florist.exceptions.*;
 import spark.Request;
 import spark.ResponseTransformer;
@@ -49,6 +50,10 @@ public class App {
 		// Set port
 		port(4567);
 
+		// Activate SessionManager
+		Thread sessionManagerThread = new Thread(new SessionManager());
+		sessionManagerThread.start();
+
 		//registers filter before processing of any request with special metothod stated below
 		//this method is run to log request with logger
 		//but similar method can be used to check user authorisation
@@ -56,6 +61,7 @@ public class App {
 			info(req);
 		});
 
+		// Filter for authorizing access to resources
 		before("/files/*", (request, response) -> {
 			int ownerID = (int)usersController.handleVerifyAccess(request, response);
 
@@ -63,6 +69,7 @@ public class App {
 			request.attribute("ownerID", ownerID);
 		});
 
+		// Create new user
 		post(CREATE_USER, (request, response) -> {
 			return usersController.handleCreateUser(request, response);
 		}, json);
@@ -92,14 +99,17 @@ public class App {
 			return ResourcesController.getSpecifiedController(request.params("path")).handleDelete(request, response);
 		}, json);
 
+		// Log in user (assign sessionID for user)
 		get(LOG_USER, (request, response) -> {
 			return usersController.handleLogUser(request, response);
 		}, json); // FIXME or just return value?
 
+		// Get metadata of the resource
 		get(METADATA, (request, response) -> {
 			return ResourcesController.getSpecifiedController(request.params("path")).handleGetMetadata(request, response);
 		}, json);
 
+		// Get content of the given folder
 		get(FOLDER_CONTENTS, (request, response) -> {
 			return folderContentsController.handleListFolderContents(request, response);
 		}, json);
@@ -109,6 +119,7 @@ public class App {
 			return folderMetadataController.handleAllFolders(request, response);
 		}, json);
 
+		// Download a file
 		get(DOWNLOAD, (request, response) -> {
 			return fileMetadataController.handleDownload(request, response);
 		}, json);
@@ -140,7 +151,6 @@ public class App {
 			response.status(404);
 			response.body(ex.getMessage());
 		});
-
 
 		exception(PathFormatException.class, (ex, request, response) -> {
 			response.status(405);

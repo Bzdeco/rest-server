@@ -81,10 +81,10 @@ public class FileMetadataDAO extends ResourcesDAO {
         }
     }
 
-    public FileMetadata upload(File uploaded, int sizeInBytes) {
+    public FileMetadata upload(File uploaded) {
         try(DSLContext create = DSL.using(DB_URL)) {
             String parentFolderPathLower = uploaded.getPathLowerToParent();
-            Optional<FolderMetadataRecord> parentFolderOpt = fetchRecordFromFolder(Folder.fromPathLower(parentFolderPathLower), create);
+            Optional<FolderMetadataRecord> parentFolderOpt = fetchRecordFromFolder(Folder.fromPathLower(parentFolderPathLower).setOwnerID(uploaded.getOwnerId()), create);
 
             if(parentFolderOpt.isPresent()) {
                 FolderMetadataRecord parentFolderRecord = parentFolderOpt.get();
@@ -94,17 +94,19 @@ public class FileMetadataDAO extends ResourcesDAO {
 
                 if (!alreadyExisting.isPresent()) {
 
-                    // Add record to FILE_METADATA
                     // Corrects possibly not valid path display
-                    uploaded = File.fromPathDisplay(parentFolderRecord.getPathDisplay() + uploaded.getName());
+                    // uploaded = File.fromPathDisplay(parentFolderRecord.getPathDisplay() + uploaded.getName());
 
+                    // Add record to FILE_METADATA
                     FileMetadataRecord record = create.newRecord(FILE_METADATA, uploaded);
 
                     record.setOwnerId(uploaded.getOwnerId());
-                    record.setSize(sizeInBytes);
+                    record.setSize(uploaded.getSize());
                     record.setEnclosingFolderId(resolveEnclosingFolderId(uploaded));
 
                     record.store();
+
+                    System.out.println(record);
 
                     return record.into(FileMetadata.class);
                 }

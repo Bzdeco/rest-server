@@ -39,7 +39,10 @@ public class File extends FileMetadata implements Resource {
 
     @Override
     public String getPathLowerToParent() {
-        return getPathDisplayToParent().toLowerCase();
+        int parentPathEnd = getPathLower().length() - getName().length();
+        String pathToParent = getPathLower().substring(0, parentPathEnd);
+
+        return pathToParent;
     }
 
     public String getPathDisplayToParent() {
@@ -95,6 +98,20 @@ public class File extends FileMetadata implements Resource {
                 getServerCreatedAt(),
                 getServerChangedAt(),
                 ownerID
+        );
+    }
+
+    public File setSize(int sizeInBytes) {
+        return new File(
+                getFileId(),
+                getName(),
+                getPathLower(),
+                getPathDisplay(),
+                getEnclosingFolderId(),
+                sizeInBytes,
+                getServerCreatedAt(),
+                getServerChangedAt(),
+                getOwnerId()
         );
     }
 }

@@ -50,31 +50,9 @@ public class SessionDataDAO extends DefaultDAO {
 
             // if user is still logged
             if(sessionDataRecord != null) {
-                // update last accessed field
-                create.update(SESSION_DATA)
-                        .set(SESSION_DATA.LAST_ACCESSED, new Timestamp(new Date().getTime()))
-                        .where(SESSION_DATA.USER_ID.eq(user.getId()))
-                        .execute();
-
-                String sessionID = create
-                        .select(SESSION_DATA.SESSION_ID)
-                        .from(SESSION_DATA)
-                        .where(SESSION_DATA.USER_ID.eq(user.getId()))
-                        .fetchOneInto(String.class);
-
+                String sessionID = sessionDataRecord.getSessionId();
 
                 return sessionID;
-                /*Timestamp lastAccessed = sessionData.getLastAccessed();
-                Timestamp now = new Timestamp(new Date().getTime());
-
-                float differenceInMinutes = (now.getTime() - lastAccessed.getTime())/(1000f*60f);
-                if(differenceInMinutes > ACCEPTED_IDLE_TIME) {
-                    // delete record, return null
-                    return null;
-                }
-                else
-                    return sessionDataOpt;*/
-
             }
             else {
                 throw new FailedAuthenticationException("User " + user.getUserName() + " is not logged in");
@@ -84,11 +62,22 @@ public class SessionDataDAO extends DefaultDAO {
 
     public Optional<Integer> getUserIDassignedToSessionID(String sessionID) {
         try(DSLContext create = DSL.using(DB_URL)) {
-            Integer userID = create
-                    .select(SESSION_DATA.USER_ID)
-                    .from(SESSION_DATA)
+            // Get userID
+            Integer userID = null;
+            SessionDataRecord sessionDataRecord = create
+                    .selectFrom(SESSION_DATA)
                     .where(SESSION_DATA.SESSION_ID.eq(sessionID))
-                    .fetchOneInto(Integer.class);
+                    .fetchOne();
+
+            if(sessionDataRecord != null) {
+                userID = sessionDataRecord.getUserId();
+
+                // Update last accessed field
+                create.update(SESSION_DATA)
+                        .set(SESSION_DATA.LAST_ACCESSED, new Timestamp(new Date().getTime()))
+                        .where(SESSION_DATA.SESSION_ID.eq(sessionID))
+                        .execute();
+            }
 
             return Optional.ofNullable(userID);
         }

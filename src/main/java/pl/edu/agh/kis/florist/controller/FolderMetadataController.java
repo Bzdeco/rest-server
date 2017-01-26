@@ -50,8 +50,8 @@ public class FolderMetadataController extends ResourcesController {
             throw new PathFormatException("Path " + newPath + " has wrong format");
 
         // Create folder objects from given paths
-        Folder source = (Folder)Folder.fromPathLower(oldPath).setOwnerID(ownerID);
-        Folder dest = (Folder)Folder.fromPathDisplay(newPath).setOwnerID(ownerID);
+        Folder source = Folder.fromPathLower(oldPath).setOwnerID(ownerID);
+        Folder dest = Folder.fromPathDisplay(newPath).setOwnerID(ownerID);
 
         FolderMetadata result = folderMetadataDAO.move(source, dest);
         response.status(SUCCESSFUL);

@@ -57,7 +57,7 @@ public class FileMetadataDAOTest {
         File file = new File(1, "File", "/file", "/File", 0, 1024, Resource.getCurrentTime(), Resource.getCurrentTime(), 0);
 
         FileMetadataDAO dao = new FileMetadataDAO();
-        FileMetadata uploaded = dao.upload(file, 0);
+        FileMetadata uploaded = dao.upload(file);
 
         assertThat(dao.getMetadata(file)).extracting(
                 FileMetadata::getFileId,
@@ -66,7 +66,7 @@ public class FileMetadataDAOTest {
                 FileMetadata::getPathDisplay,
                 FileMetadata::getEnclosingFolderId,
                 FileMetadata::getSize,
-                FileMetadata::getOwnerId).containsOnly(uploaded.getFileId(), "File", "/file", "/File", 0, 0, 0);
+                FileMetadata::getOwnerId).containsOnly(uploaded.getFileId(), "File", "/file", "/File", 0, 1024, 0);
     }
 
     @Test
@@ -74,7 +74,7 @@ public class FileMetadataDAOTest {
         File file = new File(1, "File", "/file", "/File", 0, 1024, Resource.getCurrentTime(), Resource.getCurrentTime(), 0);
 
         FileMetadataDAO dao = new FileMetadataDAO();
-        dao.upload(file, 0);
+        dao.upload(file);
         dao.delete(file);
 
         assertThat(dao.loadAllFiles()).hasSize(0);
@@ -90,7 +90,7 @@ public class FileMetadataDAOTest {
         FileMetadataDAO fileDAO = new FileMetadataDAO();
 
         folderDAO.store(folder);
-        FileMetadata uploaded = fileDAO.upload(file, 0);
+        FileMetadata uploaded = fileDAO.upload(file);
 
         FileMetadata updated = fileDAO.move(file, root);
 
@@ -101,7 +101,7 @@ public class FileMetadataDAOTest {
                 FileMetadata::getPathDisplay,
                 FileMetadata::getEnclosingFolderId,
                 FileMetadata::getSize,
-                FileMetadata::getOwnerId).containsOnly(uploaded.getFileId(), "File", "/file", "/File", 0, 0, 0);
+                FileMetadata::getOwnerId).containsOnly(uploaded.getFileId(), "File", "/file", "/File", 0, 1024, 0);
 
         assertThat(updated).extracting(
                 FileMetadata::getServerChangedAt).isNotEqualTo("2017-01-01T00:00:00Z");
@@ -118,7 +118,7 @@ public class FileMetadataDAOTest {
 
         folderDAO.store(parent);
         folderDAO.store(child);
-        FileMetadata uploaded = fileDAO.upload(file, 0);
+        FileMetadata uploaded = fileDAO.upload(file);
 
         FileMetadata updated = fileDAO.move(file, child);
 
@@ -129,7 +129,7 @@ public class FileMetadataDAOTest {
                 FileMetadata::getPathDisplay,
                 FileMetadata::getEnclosingFolderId,
                 FileMetadata::getSize,
-                FileMetadata::getOwnerId).containsOnly(uploaded.getFileId(), "File", "/folder/child/file", "/folder/child/File", 2, 0, 0);
+                FileMetadata::getOwnerId).containsOnly(uploaded.getFileId(), "File", "/folder/child/file", "/folder/child/File", 2, 1024, 0);
     }
 
     @Test
@@ -144,7 +144,7 @@ public class FileMetadataDAOTest {
 
         folderDAO.store(grandparent);
         folderDAO.store(parent);
-        FileMetadata uploaded = fileDAO.upload(file, 0);
+        FileMetadata uploaded = fileDAO.upload(file);
         FileMetadata updated = fileDAO.rename(file, renamed);
 
         assertThat(updated).extracting(
@@ -163,7 +163,7 @@ public class FileMetadataDAOTest {
         File file = new File(1, "file", "/file", "/file", 0, 0, Resource.getCurrentTime(), Resource.getCurrentTime(), 0);
 
         FileMetadataDAO fileDAO = new FileMetadataDAO();
-        FileMetadata uploaded = fileDAO.upload(file, 0);
+        FileMetadata uploaded = fileDAO.upload(file);
 
         assertThat(uploaded).extracting(
                 FileMetadata::getName,
