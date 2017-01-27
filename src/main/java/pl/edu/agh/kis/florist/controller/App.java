@@ -51,7 +51,7 @@ public class App {
 		port(4567);
 
 		// Run SessionManager
-		Thread sessionManagerThread = new Thread(new SessionManager());
+		Thread sessionManagerThread = new Thread(new SessionManager(1, 5));
 		sessionManagerThread.start();
 
 		// Logger

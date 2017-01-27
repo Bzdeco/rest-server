@@ -23,7 +23,7 @@ public class QueryParameters {
 
     public static boolean validateFilePathFormat(String resourcePath) {
         // No non-word characters and slashes inside names of folders and files
-        String filePathRegex = "(/[^\\W]+)+$";
+        String filePathRegex = "(/[\\w]+)+$";
         Pattern filePattern = Pattern.compile(filePathRegex);
         Matcher fileMatcher = filePattern.matcher(resourcePath);
 
@@ -32,7 +32,7 @@ public class QueryParameters {
 
     public static boolean validateFolderPathFormat(String resourcePath) {
         // No non-word characters and slashes inside names of folders
-        String folderPathRegex = "(/[^/\\W]+)*/$"; // root can have path "/"
+        String folderPathRegex = "(/[\\w]+)*/$"; // root can have path "/"
         Pattern folderPattern = Pattern.compile(folderPathRegex);
         Matcher folderMatcher = folderPattern.matcher(resourcePath);
 
@@ -41,7 +41,7 @@ public class QueryParameters {
 
     public static boolean validateResourceNameFormat(String newName) {
         // No non-word characters and slashes inside resource name, at least one-character name
-        String resourceNameRegex = "[^/\\W]+";
+        String resourceNameRegex = "[\\w]+";
         Pattern resourcePatter = Pattern.compile(resourceNameRegex);
         Matcher resourceMatcher = resourcePatter.matcher(newName);
 

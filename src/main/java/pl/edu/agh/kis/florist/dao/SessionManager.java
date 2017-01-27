@@ -16,25 +16,30 @@ import java.util.List;
 public class SessionManager extends DefaultDAO implements Runnable {
 
     private final int ACCEPTED_IDLE_TIME; // in minutes
+    private final int FREQUENCY; // in seconds
 
     public SessionManager() {
         super();
         ACCEPTED_IDLE_TIME = 1;
+        FREQUENCY = 5;
     }
 
-    public SessionManager(int acceptedIdleTime) {
+    public SessionManager(int acceptedIdleTime, int frequency) {
         super();
         ACCEPTED_IDLE_TIME = acceptedIdleTime;
+        FREQUENCY = frequency;
     }
 
     public SessionManager(String dbUrl) {
         super(dbUrl);
         ACCEPTED_IDLE_TIME = 1;
+        FREQUENCY = 5;
     }
 
-    public SessionManager(String dbUrl, int acceptedIdleTime) {
+    public SessionManager(String dbUrl, int acceptedIdleTime, int frequency) {
         super(dbUrl);
         ACCEPTED_IDLE_TIME = acceptedIdleTime;
+        FREQUENCY = frequency;
     }
 
     @Override
@@ -56,7 +61,7 @@ public class SessionManager extends DefaultDAO implements Runnable {
 
             // check every 5 seconds
             try {
-                Thread.sleep(5000);
+                Thread.sleep(FREQUENCY * 1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
