@@ -14,7 +14,6 @@ import pl.edu.agh.kis.florist.model.Folder;
 import spark.Request;
 import spark.Response;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.*;
 import static pl.edu.agh.kis.florist.db.Tables.FILE_CONTENTS;
@@ -111,7 +110,26 @@ public class FolderMetadataControllerTest {
     public void handleRenameFolderWhichAffectsItsChildren() {
         Request request = mock(Request.class);
         Response response = mock(Response.class);
-        // TODO
+        FolderMetadataDAO dao = new FolderMetadataDAO();
+        Folder grandparent = Folder.fromPathDisplay("/Grandparent/").setOwnerID(1);
+        Folder parent = Folder.fromPathDisplay("/Grandparent/Parent/").setOwnerID(1);
+        Folder child = Folder.fromPathDisplay("/Grandparent/Parent/Child/").setOwnerID(1);
+        dao.store(grandparent);
+        dao.store(parent);
+        dao.store(child);
+        FolderMetadataController controller = new FolderMetadataController(dao);
+
+        when(request.params("path")).thenReturn("/grandparent/parent/");
+        when(request.queryParams("new_name")).thenReturn("Renamed");
+        when(request.attribute("ownerID")).thenReturn(1);
+
+        FolderMetadata result = (FolderMetadata)controller.handleRename(request, response);
+
+        assertThat(result).extracting(
+                FolderMetadata::getName,
+                FolderMetadata::getPathLower,
+                FolderMetadata::getPathDisplay,
+                FolderMetadata::getOwnerId).containsOnly("Renamed", "/grandparent/renamed/", "/Grandparent/Renamed/", 1);
     }
 
 }

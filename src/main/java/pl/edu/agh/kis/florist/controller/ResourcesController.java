@@ -24,7 +24,6 @@ public abstract class ResourcesController extends DefaultController {
             return new FolderMetadataController();
         }
         else if(resourceTypeClass.equals(FileMetadata.class)) {
-            // TODO correct constructor
             return new FileMetadataController();
         }
         else
