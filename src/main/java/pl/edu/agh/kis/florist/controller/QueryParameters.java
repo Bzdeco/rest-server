@@ -8,7 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by bzdeco on 21.01.17.
+ * This is an utility class used to validate parameters provided in a query from client. It checks if paths don't contain forbidden characters (any other than a-zA-Z_0-9).
  */
 public class QueryParameters {
     public static Class<?> resolveResourceTypeFromPath(String resourcePath) {
