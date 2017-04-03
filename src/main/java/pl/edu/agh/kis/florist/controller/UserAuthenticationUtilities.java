@@ -1,6 +1,5 @@
 package pl.edu.agh.kis.florist.controller;
 
-import com.sun.istack.internal.NotNull;
 import org.mindrot.jbcrypt.BCrypt;
 import pl.edu.agh.kis.florist.exceptions.FailedAuthenticationException;
 
